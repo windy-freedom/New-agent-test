@@ -1,0 +1,321 @@
+.price-text {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.change-text {
+    font-weight: bold;
+}
+
+.trading-history {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.trade-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.trade-time {
+    font-size: 0.8em;
+    color: #666;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trade-info {
+    margin-top: 5px;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+}
+
+.btn-group {
+    margin-top: 10px;
+}
+
+.trade-btn {
+    transition: all 0.3s ease;
+}
+
+.trade-btn:hover {
+    transform: scale(1.05);
+}
+
+#ai-trading-toggle {
+    transition: all 0.3s ease;
+}
+
+#ai-trading-toggle:hover {
+    transform: scale(1.05);
+}
+
+#ai-status {
+    font-weight: 500;
+}
+
+.badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 500;
+    border-radius: 0.25rem;
+}
+
+.text-primary {
+    background-color: #e3f2fd;
+    color: #0d6efd !important;
+}
+
+.text-secondary {
+    background-color: #f8f9fa;
+    color: #6c757d !important;
+}
+
+/* 资产概览样式 */
+.total-assets {
+    text-align: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.total-assets h6 {
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.total-assets .value {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #198754;
+}
+
+.holdings-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.holding-item {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+
+.holding-item .coin {
+    font-weight: bold;
+    color: #0d6efd;
+    margin-right: 10px;
+}
+
+.holding-item .amount {
+    font-weight: 500;
+    margin-right: 10px;
+}
+
+.holding-item .avg-price {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+
+.holding-item .pnl {
+    font-weight: 500;
+    margin-left: auto;
+}
+
+/* AI代理性能面板样式 */
+.ai-performance {
+    font-size: 0.9em;
+}
+
+.ai-performance p {
+    margin-bottom: 0.5rem;
+}
+
+.ai-performance .profit {
+    font-weight: bold;
+    color: #198754;
+}
+
+.ai-performance .trades {
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.ai-performance .success-rate {
+    font-weight: bold;
+    color: #6610f2;
+}
+
+/* AI学习统计样式 */
+.learning-stats {
+    margin: 0.5rem 0;
+    padding: 0.5rem 0;
+    border-top: 1px dashed #eee;
+    border-bottom: 1px dashed #eee;
+}
+
+.learning-stats .learned-from {
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.learning-stats .teaching-count {
+    color: #198754;
+    font-weight: 500;
+}
+
+/* AI学习历史样式 */
+.learning-history {
+    margin-top: 20px;
+}
+
+.learning-history h6 {
+    color: #0d6efd;
+    margin-bottom: 15px;
+}
+
+.learning-history-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.learning-event {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #0d6efd;
+    transition: all 0.3s ease;
+}
+
+.learning-event:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.learning-event .event-time {
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.learning-event .event-info {
+    margin-bottom: 8px;
+}
+
+.learning-event .event-info strong {
+    color: #0d6efd;
+}
+
+.learning-event .weight-changes {
+    font-size: 0.85em;
+    color: #495057;
+    background-color: #fff;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.learning-event .weight-changes ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+    margin-top: 5px;
+}
+
+.learning-event .weight-changes li {
+    margin-bottom: 3px;
+    padding-left: 10px;
+    border-left: 2px solid #e9ecef;
+}
+
+.strategy-weights {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #eee;
+}
+
+.strategy-weights .progress {
+    margin: 0.5rem 0;
+    background-color: #f8f9fa;
+}
+
+.strategy-weights .progress-bar {
+    transition: width 0.5s ease;
+}
+
+.strategy-weights .d-flex {
+    font-size: 0.75em;
+}
+
+.trading-history::-webkit-scrollbar,
+.learning-history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.trading-history::-webkit-scrollbar-track,
+.learning-history-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.trading-history::-webkit-scrollbar-thumb,
+.learning-history-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.trading-history::-webkit-scrollbar-thumb:hover,
+.learning-history-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* AI交易状态标签 */
+.badge.bg-success {
+    background-color: #d4edda !important;
+    color: #198754 !important;
+}
+
+.badge.bg-danger {
+    background-color: #f8d7da !important;
+    color: #dc3545 !important;
+}
+
+/* 动画效果 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.trade-item:first-child,
+.learning-event:first-child {
+    animation: pulse 1s ease;
+}
+
+.holding-item:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+    transition: all 0.3s ease;
+}

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能虚拟货币模拟交易助手</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">智能虚拟货币模拟交易助手</h1>
+        
+        <!-- 资产概览 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">资产概览</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="total-assets">
+                                    <h6>总资产 (USDT)</h6>
+                                    <div class="value" id="total-assets">0.00</div>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="holdings-list" id="holdings-list">
+                                    <!-- 持仓信息将通过JavaScript动态添加 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI交易控制 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">AI自动交易系统</h5>
+                            <div>
+                                <button id="ai-trading-toggle" class="btn btn-primary">
+                                    启动AI交易
+                                </button>
+                                <span id="ai-status" class="ms-2">状态: 未运行</span>
+                            </div>
+                        </div>
+                        
+                        <!-- AI代理性能面板 -->
+                        <div class="row" id="ai-agents-panel">
+                            {% for agent_name in ai_agents %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ agent_name }}</h6>
+                                        <div class="ai-performance">
+                                            <p class="mb-1">收益: <span class="profit">0.00</span> USDT</p>
+                                            <p class="mb-1">交易次数: <span class="trades">0</span></p>
+                                            <p class="mb-1">成功率: <span class="success-rate">0.00</span>%</p>
+                                            <div class="learning-stats">
+                                                <p class="mb-1">学习自: <span class="learned-from">-</span></p>
+                                                <p class="mb-1">教导次数: <span class="teaching-count">0</span></p>
+                                            </div>
+                                            <div class="strategy-weights small text-muted">
+                                                <p class="mb-1">策略权重:</p>
+                                                <div class="progress mb-1" style="height: 5px;">
+                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 33%"></div>
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 33%"></div>
+                                                    <div class="progress-bar bg-info" role="progressbar" style="width: 34%"></div>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>价格</span>
+                                                    <span>交易量</span>
+                                                    <span>趋势</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- AI学习历史 -->
+                        <div class="learning-history mt-4">
+                            <h6>AI学习交流记录</h6>
+                            <div id="learning-history" class="learning-history-list">
+                                <!-- 学习历史将通过JavaScript动态添加 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- 市场概览 -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">市场概览</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="crypto-cards">
+                            {% for symbol, data in crypto_data.items() %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ data.name }} ({{ symbol }})</h5>
+                                        <p class="card-text price-text">
+                                            $<span class="price">{{ "%.2f"|format(data.price) }}</span>
+                                        </p>
+                                        <p class="card-text">
+                                            <span class="change-text {% if data.change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                                {{ "%.2f"|format(data.change) }}%
+                                            </span>
+                                        </p>
+                                        <div class="btn-group w-100">
+                                            <button class="btn btn-success btn-sm trade-btn" data-action="buy" data-crypto="{{ symbol }}">买入</button>
+                                            <button class="btn btn-danger btn-sm trade-btn" data-action="sell" data-crypto="{{ symbol }}">卖出</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 交易历史 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">交易历史</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="trading-history" class="trading-history">
+                            <!-- 交易历史将通过JavaScript动态添加 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let aiTrading = false;
+
+        function updatePortfolio() {
+            $.get('/api/portfolio', function(data) {
+                // 更新总资产
+                $('#total-assets').text(data.total_assets.toLocaleString());
+                
+                // 更新持仓列表
+                const holdingsList = $('#holdings-list');
+                holdingsList.empty();
+                
+                // 添加USDT余额
+                holdingsList.append(`
+                    <div class="holding-item">
+                        <span class="coin">USDT</span>
+                        <span class="amount">${data.portfolio.USDT.toLocaleString()}</span>
+                    </div>
+                `);
+                
+                // 添加其他加密货币持仓
+                for (let crypto in data.portfolio) {
+                    if (crypto !== 'USDT') {
+                        const holding = data.portfolio[crypto];
+                        const pnl = data.pnl[crypto];
+                        const pnlClass = pnl >= 0 ? 'text-success' : 'text-danger';
+                        
+                        holdingsList.append(`
+                            <div class="holding-item">
+                                <span class="coin">${crypto}</span>
+                                <span class="amount">${holding.amount.toFixed(4)}</span>
+                                <span class="avg-price">均价: $${holding.avg_price.toFixed(2)}</span>
+                                <span class="pnl ${pnlClass}">
+                                    ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USDT
+                                </span>
+                            </div>
+                        `);
+                    }
+                }
+            });
+        }
+
+        function updatePrices() {
+            $.get('/api/update_prices', function(data) {
+                for (let symbol in data) {
+                    const crypto = data[symbol];
+                    const card = $(`.card-title:contains('${symbol}')`).closest('.card');
+                    card.find('.price').text(crypto.price.toFixed(2));
+                    const changeText = card.find('.change-text');
+                    changeText.text(crypto.change.toFixed(2) + '%');
+                    changeText.removeClass('text-success text-danger')
+                        .addClass(crypto.change > 0 ? 'text-success' : 'text-danger');
+                }
+                updatePortfolio();
+            });
+        }
+
+        function updateLearningHistory() {
+            $.get('/api/learning_history', function(data) {
+                const history = $('#learning-history');
+                history.empty();
+                data.reverse().forEach(event => {
+                    history.append(`
+                        <div class="learning-event">
+                            <div class="event-time">${event.time}</div>
+                            <div class="event-info">
+                                <strong>${event.teacher}</strong> 教导 <strong>${event.student}</strong>
+                                <br>
+                                教师成功率: ${(event.teacher_success_rate * 100).toFixed(2)}%
+                            </div>
+                            <div class="weight-changes">
+                                策略权重变化:
+                                <ul>
+                                    ${Object.keys(event.old_weights).map(key => `
+                                        <li>${key}: ${event.old_weights[key].toFixed(2)} → ${event.new_weights[key].toFixed(2)}</li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `);
+                });
+            });
+        }
+
+        function updateAIStatus() {
+            $.get('/api/ai_trading/status', function(data) {
+                aiTrading = data.active;
+                
+                if (aiTrading) {
+                    $('#ai-trading-toggle').text('停止AI交易').removeClass('btn-primary').addClass('btn-danger');
+                    $('#ai-status').text('状态: 运行中');
+                } else {
+                    $('#ai-trading-toggle').text('启动AI交易').removeClass('btn-danger').addClass('btn-primary');
+                    $('#ai-status').text('状态: 已停止');
+                }
+                
+                for (let agentName in data.agents) {
+                    const agent = data.agents[agentName];
+                    const agentCard = $(`.card-title:contains('${agentName}')`).closest('.card');
+                    
+                    agentCard.find('.profit').text(agent.performance.profit.toFixed(2));
+                    agentCard.find('.trades').text(agent.performance.trades);
+                    agentCard.find('.success-rate').text((agent.performance.success_rate * 100).toFixed(2));
+                    agentCard.find('.learned-from').text(agent.learned_from.length > 0 ? agent.learned_from.join(', ') : '-');
+                    agentCard.find('.teaching-count').text(agent.teaching_count);
+                    
+                    const weights = agent.strategy_weights;
+                    const progressBars = agentCard.find('.progress-bar');
+                    progressBars.eq(0).css('width', `${weights.price_change * 100}%`);
+                    progressBars.eq(1).css('width', `${weights.volume * 100}%`);
+                    progressBars.eq(2).css('width', `${weights.trend * 100}%`);
+                }
+            });
+        }
+
+        function updateHistory() {
+            $.get('/api/history', function(data) {
+                const history = $('#trading-history');
+                history.empty();
+                data.reverse().forEach(trade => {
+                    const typeClass = trade.type.includes('AI') ? 'text-primary' : 'text-secondary';
+                    const successBadge = trade.success !== undefined ? 
+                        `<span class="badge ${trade.success ? 'bg-success' : 'bg-danger'} ms-1">
+                            ${trade.success ? '成功' : '失败'}
+                        </span>` : '';
+                    
+                    history.append(`
+                        <div class="trade-item">
+                            <div class="trade-time">
+                                ${trade.time}
+                                <span class="badge ${typeClass}">${trade.type}</span>
+                                ${successBadge}
+                            </div>
+                            <div class="trade-info">
+                                ${trade.crypto} - ${trade.action}
+                                <br>
+                                数量: ${trade.amount} | 价格: $${trade.price}
+                                <br>
+                                总额: $${trade.total}
+                            </div>
+                        </div>
+                    `);
+                });
+            });
+        }
+
+        function toggleAiTrading() {
+            const status = aiTrading ? 'stop' : 'start';
+            $.get(`/api/ai_trading/${status}`, function(response) {
+                if (response.status === 'started' || response.status === 'stopped') {
+                    updateAIStatus();
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // 初始化
+            updatePortfolio();
+            updateAIStatus();
+            updateLearningHistory();
+            
+            // 定期更新
+            setInterval(updatePrices, 5000);
+            setInterval(updateHistory, 2000);
+            setInterval(updateAIStatus, 2000);
+            setInterval(updatePortfolio, 2000);
+            setInterval(updateLearningHistory, 2000);
+            
+            // 绑定交易按钮事件
+            $('.trade-btn').click(function() {
+                const crypto = $(this).data('crypto');
+                const action = $(this).data('action');
+                $.get(`/api/trade/${crypto}/${action}`, function(data) {
+                    if (data.success) {
+                        updateHistory();
+                        updatePortfolio();
+                    }
+                });
+            });
+
+            // 绑定AI交易切换按钮事件
+            $('#ai-trading-toggle').click(toggleAiTrading);
+
+            // 初始加载交易历史
+            updateHistory();
+        });
+    </script>
+</body>
+</html>
