@@ -5,8 +5,20 @@ import threading
 import time
 import json
 from collections import deque
+import os
+from dotenv import load_dotenv
+import openai
+
+# 加载环境变量
+load_dotenv()
 
 app = Flask(__name__)
+
+# 配置OpenAI
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+# 大模型分析历史
+llm_analysis_history = []
 
 # 模拟加密货币数据
 crypto_data = {
@@ -161,14 +173,19 @@ def share_knowledge(source_agent, target_agent):
         AI_AGENTS[source_agent]['teaching_count'] += 1
 
 def ai_trading_strategy(agent_name, crypto):
-    """改进的AI交易策略"""
+    """整合大模型的AI交易策略"""
     agent = AI_AGENTS[agent_name]
     current_price = crypto_data[crypto]['price']
     current_change = crypto_data[crypto]['change']
     trend = calculate_trend(crypto)
     
+    # 获取大模型分析
+    analysis = get_market_analysis(crypto)
+    llm_action, suggested_position = extract_trading_signal(analysis)
+    
+    # 结合传统策略和大模型建议
     weights = agent['strategy_weights']
-    score = (
+    traditional_score = (
         weights['price_change'] * (abs(current_change) / agent['min_change_threshold']) +
         weights['volume'] * random.random() +
         weights['trend'] * (trend / current_price)
@@ -176,9 +193,23 @@ def ai_trading_strategy(agent_name, crypto):
     
     threshold = agent['risk_factor']
     
-    if score > threshold:
-        return 'buy' if current_change < 0 or trend > 0 else 'sell'
-    return None
+    # 如果大模型给出明确建议，增加其权重
+    if llm_action:
+        if traditional_score > threshold:
+            # 当传统策略和大模型建议一致时，增加确信度
+            traditional_action = 'buy' if current_change < 0 or trend > 0 else 'sell'
+            if llm_action == traditional_action:
+                return llm_action, suggested_position
+        # 大模型建议的权重随着AI代理的成功率增加
+        if agent['performance']['success_rate'] > 0.5:
+            return llm_action, suggested_position
+            
+    # 当大模型无明确建议时，依靠传统策略
+    if traditional_score > threshold:
+        action = 'buy' if current_change < 0 or trend > 0 else 'sell'
+        return action, 0.1
+        
+    return None, 0
 
 def ai_trading_loop(agent_name):
     """AI交易主循环"""
@@ -189,9 +220,13 @@ def ai_trading_loop(agent_name):
                 
             price_history[crypto].append(crypto_data[crypto]['price'])
             
-            action = ai_trading_strategy(agent_name, crypto)
+            action, position = ai_trading_strategy(agent_name, crypto)
             if action:
-                amount = random.uniform(0.1, 0.5)
+                # 根据建议仓位计算交易数量
+                available_funds = portfolio['USDT'] if action == 'buy' else \
+                    portfolio[crypto]['amount'] * crypto_data[crypto]['price']
+                amount = (available_funds * position) / crypto_data[crypto]['price']
+                amount = min(amount, random.uniform(0.1, 1.0))  # 设置上限以控制风险
                 price = crypto_data[crypto]['price']
                 total = amount * price
                 
@@ -325,5 +360,100 @@ def get_ai_trading_status():
         }
     })
 
+def get_market_analysis(crypto):
+    """使用大模型分析市场状况"""
+    try:
+        # 准备市场数据
+        current_price = crypto_data[crypto]['price']
+        current_change = crypto_data[crypto]['change']
+        trend = calculate_trend(crypto)
+        price_history_list = list(price_history[crypto])
+        
+        try:
+            # 尝试调用OpenAI API
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "你是一个专业的加密货币交易分析师，擅长技术分析和风险管理。"},
+                    {"role": "user", "content": f"""
+作为加密货币交易分析师，请分析以下{crypto}市场数据并给出建议：
+- 当前价格: {current_price}
+- 24小时涨跌幅: {current_change}%
+- 价格趋势: {trend}
+- 近期价格历史: {price_history_list}
+
+请从以下几个方面进行分析：
+1. 市场趋势判断
+2. 潜在风险分析
+3. 交易建议（买入/卖出/观望）
+4. 建议的仓位大小（占总资金的百分比）
+
+请用中文回答，简明扼要。
+"""}
+                ],
+                temperature=0.7,
+                max_tokens=500
+            )
+            
+            analysis = response.choices[0].message.content
+            
+            # 记录分析历史
+            llm_analysis_history.append({
+                'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'crypto': crypto,
+                'analysis': analysis,
+                'market_data': {
+                    'price': current_price,
+                    'change': current_change,
+                    'trend': trend
+                }
+            })
+            
+            return analysis
+        except Exception as api_error:
+            print(f"OpenAI API调用失败: {str(api_error)}")
+            return f"分析失败: {str(api_error)}"
+            
+    except Exception as e:
+        return f"分析出错: {str(e)}"
+
+def extract_trading_signal(analysis):
+    """从大模型分析结果中提取交易信号"""
+    analysis = analysis.lower()
+    
+    # 提取交易建议
+    if '买入' in analysis or 'buy' in analysis:
+        action = 'buy'
+    elif '卖出' in analysis or 'sell' in analysis:
+        action = 'sell'
+    else:
+        action = None
+        
+    # 提取建议仓位
+    import re
+    position_matches = re.findall(r'(\d+)%', analysis)
+    suggested_position = float(position_matches[0])/100 if position_matches else 0.1
+    
+    return action, suggested_position
+
+@app.route('/api/market_analysis/<crypto>')
+def get_crypto_analysis(crypto):
+    """获取特定加密货币的市场分析"""
+    if crypto not in crypto_data:
+        return jsonify({'error': '无效的加密货币'}), 400
+        
+    analysis = get_market_analysis(crypto)
+    return jsonify({
+        'crypto': crypto,
+        'analysis': analysis,
+        'current_price': crypto_data[crypto]['price'],
+        'current_change': crypto_data[crypto]['change']
+    })
+
+@app.route('/api/analysis_history')
+def get_analysis_history():
+    """获取分析历史"""
+    return jsonify(llm_analysis_history)
+
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True, port=5001)
+    app.run(debug=True, threaded=True, port=5002)
